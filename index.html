@@ -210,16 +210,22 @@ section{padding:8rem 5rem}
 .countries-track{display:flex;gap:2px;width:max-content;user-select:none;padding:2px}
 /* ── 3D FLIP CARD ─────────────────────────────────────────────────────── */
 .country-card{
-  width:310px;height:270px;flex-shrink:0;
-  perspective:1000px;position:relative;cursor:pointer;
+  width:310px;height:290px;flex-shrink:0;
+  perspective:1200px;position:relative;cursor:pointer;
 }
 .card-inner{
   position:relative;width:100%;height:100%;
-  transform-style:preserve-3d;
+  transform-style:preserve-3d;-webkit-transform-style:preserve-3d;
   transition:transform 0.7s cubic-bezier(0.16,1,0.3,1);
 }
-.country-card:hover .card-inner,
+/* hover only on true pointer devices — fixes iOS Safari sticky-hover bug */
+@media(hover:hover){
+  .country-card:hover .card-inner{transform:rotateY(180deg)}
+  .country-card:hover .card-front::after{transform:scaleX(1)}
+}
+/* tap-toggle flip (touch / iOS) */
 .country-card.flipped .card-inner{transform:rotateY(180deg)}
+.country-card.flipped .card-front::after{transform:scaleX(1)}
 .card-front,.card-back{
   position:absolute;inset:0;
   backface-visibility:hidden;-webkit-backface-visibility:hidden;
@@ -232,13 +238,12 @@ section{padding:8rem 5rem}
   background:linear-gradient(90deg,transparent,var(--red),transparent);
   transform:scaleX(0);transition:transform 0.5s var(--ease-out);
 }
-.country-card:hover .card-front::after,
-.country-card.flipped .card-front::after{transform:scaleX(1)}
 .card-back{
   background:var(--bg3);
   transform:rotateY(180deg);
   justify-content:center;
-  border-top:1px solid rgba(204,0,0,0.25);
+  padding:2.8rem 2.4rem;
+  border-top:1px solid rgba(255,68,68,0.3);
 }
 .country-code{
   position:absolute;top:50%;left:50%;
@@ -256,12 +261,12 @@ section{padding:8rem 5rem}
 .country-name{font-family:var(--font-display);font-size:1.1rem;font-weight:700;letter-spacing:4px;text-transform:uppercase}
 .card-back-label{
   display:flex;align-items:center;gap:0.8rem;
-  font-family:var(--font-cond);font-size:0.6rem;font-weight:300;
-  letter-spacing:5px;text-transform:uppercase;color:var(--red);
-  margin-bottom:1.3rem;
+  font-family:var(--font-cond);font-size:0.65rem;font-weight:400;
+  letter-spacing:5px;text-transform:uppercase;color:#ff4444;
+  margin-bottom:1.3rem;flex-shrink:0;
 }
-.card-back-label::before{content:'';display:block;width:16px;height:1px;background:var(--red)}
-.country-desc{font-family:var(--font-cond);font-size:0.82rem;font-weight:200;color:var(--text2);line-height:1.9}
+.card-back-label::before{content:'';display:block;width:16px;height:1px;background:#ff4444;flex-shrink:0}
+.country-desc{font-family:var(--font-cond);font-size:0.95rem;font-weight:300;color:#ffffff;line-height:1.8}
 .countries-drag-hint{
   margin-top:2.5rem;display:inline-flex;align-items:center;gap:1.2rem;
   font-family:var(--font-cond);font-size:0.6rem;font-weight:200;
@@ -351,14 +356,19 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:3rem 5re
   #cursorCanvas,.cursor-ring{display:none}
   body{cursor:auto}
   .btn-primary,.btn-ghost,.btn-call,.btn-wa,.hamburger{cursor:pointer}
-  .countries-scroll-wrapper{margin:0 -1.8rem;padding:0 1.8rem}
-  .countries-scroll-wrapper::before,.countries-scroll-wrapper::after{width:60px}
+  /* countries — vertical stack on mobile */
+  .countries-scroll-wrapper{overflow:visible;cursor:default;margin:0;padding:0}
+  .countries-scroll-wrapper::before,.countries-scroll-wrapper::after{display:none}
+  .countries-track{flex-direction:column;width:100%;gap:3px}
+  .country-card{width:100%;height:290px;flex-shrink:1}
+  .countries-drag-hint{display:none}
 }
 @media(max-width:600px){
   .hero h1{letter-spacing:2px}
   .about-stats{grid-template-columns:1fr 1fr}
   .section-title{font-size:clamp(2rem,9vw,3.2rem)}
-  .country-card{width:260px;height:240px}
+  .country-card{width:100%;height:270px}
+  .card-back{padding:2.2rem 2rem}
 }
 </style>
 </head>
@@ -923,10 +933,17 @@ function launchMomentum() {
 wrapper.addEventListener('mouseup', () => { isDragging = false; wrapper.classList.remove('is-dragging'); launchMomentum(); });
 wrapper.addEventListener('mouseleave', () => { if (!isDragging) return; isDragging = false; wrapper.classList.remove('is-dragging'); launchMomentum(); });
 
-// Touch
+// Touch scroll (horizontal layout only — disabled on mobile stacked layout)
+const isMobileStack = () => window.matchMedia('(max-width:900px)').matches;
 let tStartX, tScrollLeft;
-wrapper.addEventListener('touchstart', e => { tStartX = e.touches[0].pageX; tScrollLeft = wrapper.scrollLeft; }, { passive: true });
-wrapper.addEventListener('touchmove', e => { wrapper.scrollLeft = tScrollLeft - (e.touches[0].pageX - tStartX); }, { passive: true });
+wrapper.addEventListener('touchstart', e => {
+  if (isMobileStack()) return;
+  tStartX = e.touches[0].pageX; tScrollLeft = wrapper.scrollLeft;
+}, { passive: true });
+wrapper.addEventListener('touchmove', e => {
+  if (isMobileStack()) return;
+  wrapper.scrollLeft = tScrollLeft - (e.touches[0].pageX - tStartX);
+}, { passive: true });
 
 // ─── MAGNETIC BUTTONS ───────────────────────────────────────────────────────
 document.querySelectorAll('.btn-magnetic').forEach(btn => {
@@ -963,10 +980,12 @@ document.querySelectorAll('.mobile-link').forEach(l => {
   });
 });
 
-// ─── CARD FLIP (touch devices) ──────────────────────────────────────────────
+// ─── CARD FLIP (touch / iOS Safari tap toggle) ──────────────────────────────
+// Only activate on devices that don't support true hover (touch screens)
+const noHover = window.matchMedia('(hover: none)');
 document.querySelectorAll('.country-card').forEach(card => {
   card.addEventListener('click', () => {
-    if (window.matchMedia('(hover: none)').matches) card.classList.toggle('flipped');
+    if (noHover.matches) card.classList.toggle('flipped');
   });
 });
 
