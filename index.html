@@ -208,22 +208,60 @@ section{padding:8rem 5rem}
 .countries-scroll-wrapper::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
 .countries-scroll-wrapper::after{right:0;background:linear-gradient(-90deg,var(--bg),transparent)}
 .countries-track{display:flex;gap:2px;width:max-content;user-select:none;padding:2px}
+/* ── 3D FLIP CARD ─────────────────────────────────────────────────────── */
 .country-card{
-  width:310px;flex-shrink:0;background:var(--bg2);
-  padding:3.2rem 2.2rem;position:relative;overflow:hidden;
-  transition:background 0.4s ease;
+  width:310px;height:270px;flex-shrink:0;
+  perspective:1000px;position:relative;cursor:pointer;
 }
-.country-card::after{
+.card-inner{
+  position:relative;width:100%;height:100%;
+  transform-style:preserve-3d;
+  transition:transform 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+.country-card:hover .card-inner,
+.country-card.flipped .card-inner{transform:rotateY(180deg)}
+.card-front,.card-back{
+  position:absolute;inset:0;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;
+  padding:2.6rem 2.2rem;
+}
+.card-front{background:var(--bg2);justify-content:flex-end;overflow:hidden}
+.card-front::after{
   content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--red),transparent);
   transform:scaleX(0);transition:transform 0.5s var(--ease-out);
 }
-.country-card:hover{background:var(--bg3)}
-.country-card:hover::after{transform:scaleX(1)}
-.country-num{position:absolute;top:1.6rem;right:1.8rem;font-family:var(--font-display);font-size:0.6rem;letter-spacing:3px;color:var(--border2)}
-.country-flag{font-size:2.6rem;display:block;margin-bottom:2rem;line-height:1}
-.country-name{font-family:var(--font-display);font-size:1.1rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:1rem}
-.country-desc{font-family:var(--font-cond);font-size:0.78rem;font-weight:200;color:var(--text3);line-height:1.85}
+.country-card:hover .card-front::after,
+.country-card.flipped .card-front::after{transform:scaleX(1)}
+.card-back{
+  background:var(--bg3);
+  transform:rotateY(180deg);
+  justify-content:center;
+  border-top:1px solid rgba(204,0,0,0.25);
+}
+.country-code{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-55%);
+  font-family:var(--font-display);font-size:6rem;font-weight:900;
+  letter-spacing:6px;text-transform:uppercase;
+  color:var(--text);opacity:0.04;
+  pointer-events:none;user-select:none;line-height:1;
+}
+.country-num{
+  position:absolute;top:1.6rem;right:1.8rem;
+  font-family:var(--font-display);font-size:0.6rem;letter-spacing:3px;color:var(--border2);
+}
+.country-flag{font-size:2.8rem;display:block;margin-bottom:1.4rem;line-height:1}
+.country-name{font-family:var(--font-display);font-size:1.1rem;font-weight:700;letter-spacing:4px;text-transform:uppercase}
+.card-back-label{
+  display:flex;align-items:center;gap:0.8rem;
+  font-family:var(--font-cond);font-size:0.6rem;font-weight:300;
+  letter-spacing:5px;text-transform:uppercase;color:var(--red);
+  margin-bottom:1.3rem;
+}
+.card-back-label::before{content:'';display:block;width:16px;height:1px;background:var(--red)}
+.country-desc{font-family:var(--font-cond);font-size:0.82rem;font-weight:200;color:var(--text2);line-height:1.9}
 .countries-drag-hint{
   margin-top:2.5rem;display:inline-flex;align-items:center;gap:1.2rem;
   font-family:var(--font-cond);font-size:0.6rem;font-weight:200;
@@ -320,7 +358,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:3rem 5re
   .hero h1{letter-spacing:2px}
   .about-stats{grid-template-columns:1fr 1fr}
   .section-title{font-size:clamp(2rem,9vw,3.2rem)}
-  .country-card{width:260px;padding:2.5rem 1.8rem}
+  .country-card{width:260px;height:240px}
 }
 </style>
 </head>
@@ -432,34 +470,74 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:3rem 5re
   <div class="countries-scroll-wrapper" id="countriesWrapper">
     <div class="countries-track" id="countriesTrack">
       <div class="country-card">
-        <span class="country-num">01</span>
-        <span class="country-flag">🇮🇹</span>
-        <div class="country-name">Italija</div>
-        <div class="country-desc">Fiat, Alfa Romeo i ekskluzivna italijanska vozila po povoljnim cenama</div>
+        <div class="card-inner">
+          <div class="card-front">
+            <span class="country-num">01</span>
+            <span class="country-code">IT</span>
+            <span class="country-flag">🇮🇹</span>
+            <div class="country-name">Italija</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-label">Italija</div>
+            <div class="country-desc">Fiat, Alfa Romeo i ekskluzivna italijanska vozila po povoljnim cenama</div>
+          </div>
+        </div>
       </div>
       <div class="country-card">
-        <span class="country-num">02</span>
-        <span class="country-flag">🇩🇪</span>
-        <div class="country-name">Nemačka</div>
-        <div class="country-desc">BMW, Mercedes, Volkswagen i Audi sa garantovanom istorijom servisa</div>
+        <div class="card-inner">
+          <div class="card-front">
+            <span class="country-num">02</span>
+            <span class="country-code">DE</span>
+            <span class="country-flag">🇩🇪</span>
+            <div class="country-name">Nemačka</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-label">Nemačka</div>
+            <div class="country-desc">BMW, Mercedes, Volkswagen i Audi sa garantovanom istorijom servisa</div>
+          </div>
+        </div>
       </div>
       <div class="country-card">
-        <span class="country-num">03</span>
-        <span class="country-flag">🇫🇷</span>
-        <div class="country-name">Francuska</div>
-        <div class="country-desc">Renault, Peugeot i Citroën — odlično održavana vozila sa dokumentovanom istorijom</div>
+        <div class="card-inner">
+          <div class="card-front">
+            <span class="country-num">03</span>
+            <span class="country-code">FR</span>
+            <span class="country-flag">🇫🇷</span>
+            <div class="country-name">Francuska</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-label">Francuska</div>
+            <div class="country-desc">Renault, Peugeot i Citroën — odlično održavana vozila sa dokumentovanom istorijom</div>
+          </div>
+        </div>
       </div>
       <div class="country-card">
-        <span class="country-num">04</span>
-        <span class="country-flag">🇧🇪</span>
-        <div class="country-name">Belgija</div>
-        <div class="country-desc">Široka ponuda polovnih vozila sa niskim kilometražama i povoljnim EU cenama</div>
+        <div class="card-inner">
+          <div class="card-front">
+            <span class="country-num">04</span>
+            <span class="country-code">BE</span>
+            <span class="country-flag">🇧🇪</span>
+            <div class="country-name">Belgija</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-label">Belgija</div>
+            <div class="country-desc">Široka ponuda polovnih vozila sa niskim kilometražama i povoljnim EU cenama</div>
+          </div>
+        </div>
       </div>
       <div class="country-card">
-        <span class="country-num">05</span>
-        <span class="country-flag">🇳🇱</span>
-        <div class="country-name">Holandija</div>
-        <div class="country-desc">Kvalitetna vozila sa odličnom dokumentacijom i poznatom holandskom pedantnošću održavanja</div>
+        <div class="card-inner">
+          <div class="card-front">
+            <span class="country-num">05</span>
+            <span class="country-code">NL</span>
+            <span class="country-flag">🇳🇱</span>
+            <div class="country-name">Holandija</div>
+          </div>
+          <div class="card-back">
+            <div class="card-back-label">Holandija</div>
+            <div class="country-desc">Kvalitetna vozila sa odličnom dokumentacijom i poznatom holandskom pedantnošću održavanja</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -882,6 +960,13 @@ document.querySelectorAll('.mobile-link').forEach(l => {
     ham.classList.remove('active');
     mob.classList.remove('active');
     document.body.style.overflow = '';
+  });
+});
+
+// ─── CARD FLIP (touch devices) ──────────────────────────────────────────────
+document.querySelectorAll('.country-card').forEach(card => {
+  card.addEventListener('click', () => {
+    if (window.matchMedia('(hover: none)').matches) card.classList.toggle('flipped');
   });
 });
 
